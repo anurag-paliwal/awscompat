@@ -35,76 +35,88 @@ import com.amazonaws.auth.STSAssumeRoleSessionCredentialsProvider;
 
 public class Main {
 
-     private static final String CLOUD_PLATFORM_SCOPE = "https://www.googleapis.com/auth/cloud-platform";
-     // private static final String credFile = "/home/srashid/gcp_misc/certs/mineral-minutia-820-e9a7c8665867.json";
-     private static final String target_audience = "https://sts.amazonaws.com";
+  private static final String CLOUD_PLATFORM_SCOPE = "https://www.googleapis.com/auth/cloud-platform";
+  // private static final String credFile = "/home/srashid/gcp_misc/certs/mineral-minutia-820-e9a7c8665867.json";
+  private static final String target_audience = "https://sts.amazonaws.com";
 
-     public static void main(String[] args) throws Exception {
+  public static void main(String[] args) throws Exception {
 
-          Main tc = new Main();
+    Main tc = new Main();
 
-          IdTokenCredentials tok = tc.getIDTokenFromComputeEngine(target_audience);
+    IdTokenCredentials tok = tc.getIDTokenFromComputeEngine(target_audience);
 
-          // ServiceAccountCredentials sac = ServiceAccountCredentials.fromStream(new FileInputStream(credFile));
-          // sac = (ServiceAccountCredentials) sac.createScoped(Arrays.asList(CLOUD_PLATFORM_SCOPE));
+    // ServiceAccountCredentials sac = ServiceAccountCredentials.fromStream(new FileInputStream(credFile));
+    // sac = (ServiceAccountCredentials) sac.createScoped(Arrays.asList(CLOUD_PLATFORM_SCOPE));
 
-          // IdTokenCredentials tok = tc.getIDTokenFromServiceAccount(sac, target_audience);
+    // IdTokenCredentials tok = tc.getIDTokenFromServiceAccount(sac, target_audience);
 
-          // String impersonatedServiceAccount =
-          // "impersonated-account@project.iam.gserviceaccount.com";
-          // IdTokenCredentials tok =
-          // tc.getIDTokenFromImpersonatedCredentials((GoogleCredentials)sac,
-          // impersonatedServiceAccount, target_audience);
+    // String impersonatedServiceAccount =
+    // "impersonated-account@project.iam.gserviceaccount.com";
+    // IdTokenCredentials tok =
+    // tc.getIDTokenFromImpersonatedCredentials((GoogleCredentials)sac,
+    // impersonatedServiceAccount, target_audience);
 
-          // AmazonS3 s3 =
-          // AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_2).build();
+    // AmazonS3 s3 =
+    // AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_2).build();
 
-          // https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html#credentials-specify-provider
+    // https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html#credentials-specify-provider
 
-          String roleArn = "arn:aws:iam::444115380735:role/SdpConnectorDelegatedRole";
-          String collectorArn = "arn:aws:iam::129583446118:role/SdpConnectorCollectorRole";
-	  
-          STSAssumeRoleSessionCredentialsProvider credsProvider = new STSAssumeRoleSessionCredentialsProvider(GCPAWSCredentialProvider.builder().roleArn(roleArn).roleSessionName(null)
-                              .googleCredentials(tok).build(), collectorArn, "gcp-aws-collector-role");
+    // Primary delegated role.
+    String roleArn = "arn:aws:iam::444115380735:role/SdpConnectorDelegatedRole";
 
-          AmazonS3 s3 = AmazonS3ClientBuilder.standard().withRegion(/*Regions.US_EAST_1*/ Regions.EU_NORTH_1)
-                    .withCredentials(credsProvider)
-                    .build();
+    // Role under account. Typically this will be discovered.
+    String collectorArn = "arn:aws:iam::129583446118:role/SdpConnectorCollectorRole";
 
-          String bucket_name = "sdp-test-collector-bucket";
-	  // String bucket_name = "connector-delegated-s3";
+    STSAssumeRoleSessionCredentialsProvider credsProvider = new STSAssumeRoleSessionCredentialsProvider(
+        GCPAWSCredentialProvider.builder().roleArn(roleArn).roleSessionName(null)
+            .googleCredentials(tok).build(), collectorArn, "gcp-aws-collector-role");
 
-          ListObjectsV2Result result = s3.listObjectsV2(bucket_name);
-          List<S3ObjectSummary> objects = result.getObjectSummaries();
-          for (S3ObjectSummary os : objects) {
-               System.out.println("* " + os.getKey());
-          }
+    AmazonS3 s3 = AmazonS3ClientBuilder.standard()
+        .withRegion(/*Regions.US_EAST_1*/ Regions.EU_NORTH_1)
+        .withCredentials(credsProvider)
+        .build();
 
-     }
+    // bucket under different account accessible only via collector role.
+    String bucket_name = "sdp-test-collector-bucket";
 
-     public IdTokenCredentials getIDTokenFromServiceAccount(ServiceAccountCredentials saCreds, String targetAudience) {
-          IdTokenCredentials tokenCredential = IdTokenCredentials.newBuilder().setIdTokenProvider(saCreds)
-                    .setTargetAudience(targetAudience).build();
-          return tokenCredential;
-     }
+    // Bucket in delegated account.
+    // String bucket_name = "connector-delegated-s3";
 
-     public IdTokenCredentials getIDTokenFromComputeEngine(String targetAudience) {
-          ComputeEngineCredentials caCreds = ComputeEngineCredentials.create();
-          IdTokenCredentials tokenCredential = IdTokenCredentials.newBuilder().setIdTokenProvider(caCreds)
-                    .setTargetAudience(targetAudience)
-                    .setOptions(Arrays.asList(IdTokenProvider.Option.FORMAT_FULL, IdTokenProvider.Option.LICENSES_TRUE))
-                    .build();
-          return tokenCredential;
-     }
+    ListObjectsV2Result result = s3.listObjectsV2(bucket_name);
+    List<S3ObjectSummary> objects = result.getObjectSummaries();
+    for (S3ObjectSummary os : objects) {
+      System.out.println("* " + os.getKey());
+    }
 
-     public IdTokenCredentials getIDTokenFromImpersonatedCredentials(GoogleCredentials sourceCreds,
-               String impersonatedServieAccount, String targetAudience) {
-          ImpersonatedCredentials imCreds = ImpersonatedCredentials.create(sourceCreds, impersonatedServieAccount, null,
-                    Arrays.asList(CLOUD_PLATFORM_SCOPE), 300);
-          IdTokenCredentials tokenCredential = IdTokenCredentials.newBuilder().setIdTokenProvider(imCreds)
-                    .setTargetAudience(targetAudience).setOptions(Arrays.asList(IdTokenProvider.Option.INCLUDE_EMAIL))
-                    .build();
-          return tokenCredential;
-     }
+  }
+
+  public IdTokenCredentials getIDTokenFromServiceAccount(ServiceAccountCredentials saCreds,
+      String targetAudience) {
+    IdTokenCredentials tokenCredential = IdTokenCredentials.newBuilder().setIdTokenProvider(saCreds)
+        .setTargetAudience(targetAudience).build();
+    return tokenCredential;
+  }
+
+  public IdTokenCredentials getIDTokenFromComputeEngine(String targetAudience) {
+    ComputeEngineCredentials caCreds = ComputeEngineCredentials.create();
+    IdTokenCredentials tokenCredential = IdTokenCredentials.newBuilder().setIdTokenProvider(caCreds)
+        .setTargetAudience(targetAudience)
+        .setOptions(
+            Arrays.asList(IdTokenProvider.Option.FORMAT_FULL, IdTokenProvider.Option.LICENSES_TRUE))
+        .build();
+    return tokenCredential;
+  }
+
+  public IdTokenCredentials getIDTokenFromImpersonatedCredentials(GoogleCredentials sourceCreds,
+      String impersonatedServieAccount, String targetAudience) {
+    ImpersonatedCredentials imCreds = ImpersonatedCredentials.create(sourceCreds,
+        impersonatedServieAccount, null,
+        Arrays.asList(CLOUD_PLATFORM_SCOPE), 300);
+    IdTokenCredentials tokenCredential = IdTokenCredentials.newBuilder().setIdTokenProvider(imCreds)
+        .setTargetAudience(targetAudience)
+        .setOptions(Arrays.asList(IdTokenProvider.Option.INCLUDE_EMAIL))
+        .build();
+    return tokenCredential;
+  }
 
 }
