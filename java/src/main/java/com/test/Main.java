@@ -121,7 +121,7 @@ public class Main {
     return tokenCredential;
   }
 
-  public IdTokenCredentials getIdTokenFromSA(String serviceAccount, String target_audience) {
+  public IdTokenCredentials getIdTokenFromSA(String serviceAccount, String targetAudience) {
 
     GoogleCredentials creds = GoogleCredentials.getApplicationDefault();
     ImpersonatedCredentials imCreds = ImpersonatedCredentials.create(creds,
