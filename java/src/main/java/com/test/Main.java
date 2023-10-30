@@ -43,7 +43,9 @@ public class Main {
 
     Main tc = new Main();
 
-    IdTokenCredentials tok = tc.getIDTokenFromComputeEngine(target_audience);
+    // IdTokenCredentials tok = tc.getIDTokenFromComputeEngine(target_audience);
+    IdTokenCredentials tok = tc.getIdTokenFromSA(
+        "demo-service-account@ap-syft-experimental-3.iam.gserviceaccount.com", target_audience);
 
     // ServiceAccountCredentials sac = ServiceAccountCredentials.fromStream(new FileInputStream(credFile));
     // sac = (ServiceAccountCredentials) sac.createScoped(Arrays.asList(CLOUD_PLATFORM_SCOPE));
@@ -113,6 +115,17 @@ public class Main {
         impersonatedServieAccount, null,
         Arrays.asList(CLOUD_PLATFORM_SCOPE), 300);
     IdTokenCredentials tokenCredential = IdTokenCredentials.newBuilder().setIdTokenProvider(imCreds)
+        .setTargetAudience(targetAudience)
+        .setOptions(Arrays.asList(IdTokenProvider.Option.INCLUDE_EMAIL))
+        .build();
+    return tokenCredential;
+  }
+
+  public IdTokenCredentials getIdTokenFromSA(String serviceAccount, String target_audience) {
+
+    GoogleCredentials creds = GoogleCredentials.getApplicationDefault()
+        .createDelegated(serviceAccount);
+    IdTokenCredentials tokenCredential = IdTokenCredentials.newBuilder().setIdTokenProvider(creds)
         .setTargetAudience(targetAudience)
         .setOptions(Arrays.asList(IdTokenProvider.Option.INCLUDE_EMAIL))
         .build();
