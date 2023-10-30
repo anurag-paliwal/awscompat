@@ -123,9 +123,11 @@ public class Main {
 
   public IdTokenCredentials getIdTokenFromSA(String serviceAccount, String target_audience) {
 
-    GoogleCredentials creds = GoogleCredentials.getApplicationDefault()
-        .createDelegated(serviceAccount);
-    IdTokenCredentials tokenCredential = IdTokenCredentials.newBuilder().setIdTokenProvider(creds)
+    GoogleCredentials creds = GoogleCredentials.getApplicationDefault();
+    ImpersonatedCredentials imCreds = ImpersonatedCredentials.create(creds,
+        impersonatedServieAccount, null,
+        Arrays.asList(CLOUD_PLATFORM_SCOPE), 300);
+    IdTokenCredentials tokenCredential = IdTokenCredentials.newBuilder().setIdTokenProvider(imCreds)
         .setTargetAudience(targetAudience)
         .setOptions(Arrays.asList(IdTokenProvider.Option.INCLUDE_EMAIL))
         .build();
