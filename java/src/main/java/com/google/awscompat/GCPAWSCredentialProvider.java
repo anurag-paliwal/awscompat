@@ -60,7 +60,7 @@ public class GCPAWSCredentialProvider implements AWSCredentialsProvider {
         try {
             this.googleCredentials.refreshIfExpired();
         } catch (IOException except) {
-            throw loadException;
+            throw new RuntimeException(except);
         }
 
         String idToken = this.googleCredentials.getIdToken().getTokenValue();

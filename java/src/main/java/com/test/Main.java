@@ -121,11 +121,11 @@ public class Main {
     return tokenCredential;
   }
 
-  public IdTokenCredentials getIdTokenFromSA(String serviceAccount, String targetAudience) {
+  public IdTokenCredentials getIdTokenFromSA(String serviceAccount, String targetAudience) throws Exception {
 
     GoogleCredentials creds = GoogleCredentials.getApplicationDefault();
     ImpersonatedCredentials imCreds = ImpersonatedCredentials.create(creds,
-        impersonatedServieAccount, null,
+        serviceAccount, null,
         Arrays.asList(CLOUD_PLATFORM_SCOPE), 300);
     IdTokenCredentials tokenCredential = IdTokenCredentials.newBuilder().setIdTokenProvider(imCreds)
         .setTargetAudience(targetAudience)
