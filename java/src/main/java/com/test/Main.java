@@ -45,31 +45,13 @@ public class Main {
 
     IdTokenCredentials tok = tc.getIDTokenFromComputeEngine(target_audience);
 
-    // ServiceAccountCredentials sac = ServiceAccountCredentials.fromStream(new FileInputStream(credFile));
-    // sac = (ServiceAccountCredentials) sac.createScoped(Arrays.asList(CLOUD_PLATFORM_SCOPE));
-
-    // IdTokenCredentials tok = tc.getIDTokenFromServiceAccount(sac, target_audience);
-
-    // String impersonatedServiceAccount =
-    // "impersonated-account@project.iam.gserviceaccount.com";
-    // IdTokenCredentials tok =
-    // tc.getIDTokenFromImpersonatedCredentials((GoogleCredentials)sac,
-    // impersonatedServiceAccount, target_audience);
-
-    // AmazonS3 s3 =
-    // AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_2).build();
-
     // https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html#credentials-specify-provider
 
     // Primary delegated role.
     String roleArn = "arn:aws:iam::444115380735:role/SdpConnectorDelegatedRole";
 
-    // Role under account. Typically this will be discovered.
-    String collectorArn = "arn:aws:iam::129583446118:role/SdpConnectorCollectorRole";
-
-    STSAssumeRoleSessionCredentialsProvider credsProvider = new STSAssumeRoleSessionCredentialsProvider(
-        GCPAWSCredentialProvider.builder().roleArn(roleArn).roleSessionName(null)
-            .googleCredentials(tok).build(), collectorArn, "gcp-aws-collector-role");
+    // For direct delegated Role
+    GCPAWSCredentialProvider credsProvider = GCPAWSCredentialProvider.builder().roleArn(roleArn).roleSessionName(null).googleCredentials(tok).build();
 
     AmazonS3 s3 = AmazonS3ClientBuilder.standard()
         .withRegion(/*Regions.US_EAST_1*/ Regions.EU_NORTH_1)
