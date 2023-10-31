@@ -54,17 +54,17 @@ public class Main {
     GCPAWSCredentialProvider credsProvider = GCPAWSCredentialProvider.builder().roleArn(roleArn).roleSessionName(null).googleCredentials(tok).build();
 
     AmazonS3 s3 = AmazonS3ClientBuilder.standard()
-        .withRegion(/*Regions.US_EAST_1*/ Regions.EU_NORTH_1)
+        .withRegion(Regions.US_EAST_1)
         .withCredentials(credsProvider)
         .build();
 
     // bucket under different account accessible only via collector role.
-    String bucket_name = "sdp-test-collector-bucket";
+    // String bucket_name = "sdp-test-collector-bucket";
 
     // Bucket in delegated account.
-    // String bucket_name = "connector-delegated-s3";
+    String bucketName = "connector-delegated-s3";
 
-    ListObjectsV2Result result = s3.listObjectsV2(bucket_name);
+    ListObjectsV2Result result = s3.listObjectsV2(bucketName);
     List<S3ObjectSummary> objects = result.getObjectSummaries();
     for (S3ObjectSummary os : objects) {
       System.out.println("* " + os.getKey());
